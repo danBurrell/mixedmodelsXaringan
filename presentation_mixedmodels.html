@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Generalised Linear Models</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dan Burrell" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Generalised Linear Models
+## with Random Effects
+### Dan Burrell
+### BiometRy
+### 08/07/2021 (updated: 2021-07-18)
+
+---
+
+
+
+---
+class: title-slide, center, middle
+
+# INTRODUCTION
+
+---
+class: top, left
+
+## What is this course about?
+
+### A very general approach to statistical modeling
+
+Most researchers are (at least mildly) comfortable with statistics when it involves simple hypothesis testing with t-tests, p-values, significance or `\(\alpha\)` levels and rejection regions. 
+
+Some are basically comfortable with linear statistical models too; models that apply to uncorrelated and unconstrained continuous data with constant variance:
+
+* simple and multiple linear regression models
+* classification or analysis of variance (ANOVA) models
+
+Most do not understand well that these kinds of models are not usually appropriate for data that is .orange[dependent/correlated], or exhibits .orange[non-constant variance], or is measured on .orange[discrete or ordinal scales], or some combination of these. 
+
+**.navy[This course aims to introduce a flexible, general approach to statistical modeling that is capable of appropriately modeling all these kinds of data.]**
+
+---
+class: title-slide, center, middle
+
+# DETERMINISTIC VS. PROBABILISTIC MODELS
+---
+class: top, left
+
+## Quantitiative Models
+
+Scientists use models to study systems and processes because they are idealizations of reality that isolate the features of the phenomena that are pertinent to the study objectives:
+
+They use quantitative models because the process of mathematical abstraction clarifies and deepens understanding from within a universal and powerful logical framework that lends itself to communication and critique for continued learning.
+
+Statistician George Box has been credited with saying that __*.orange[All models are wrong. Some are useful!]*__ 
+
+* All models vary in the degree of accuracy with which they depict the **true** state of nature. 
+* All models are subject to prediction error.
+
+The degree to which a model is useful often has to do with its relative accuracy. A model is considered sufficiently accurate if it can predict the value of some variable and do so with an error that, for practical purposes, can be regarded as negligible.
+
+---
+class: top, left
+
+## A simple scenario
+
+A researcher wishes to relate a variable `\(Y\)` to a variable `\(X\)` on the basis of `\(n\)` of experiments.
+
+For example, the figure below shows the results from a particular experimental setup that has been run `\(n=35\)` times.
+
+&lt;img src="presentation_mixedmodels_files/figure-html/fig1-1.svg" style="display: block; margin: auto;" /&gt;
+
+How should the researcher model this data?
+
+---
+class: top, left
+
+## A deterministic approach to modeling
+
+We could try to model the relationship between `\(Y\)` and `\(X\)` as a function:
+`$$Y\approx f(X)$$`
+Since [.blueviolet[Figure 1]](presentation_mixedmodels_files/figure-html/fig1-1.svg) indicates an approximately linear relationship we might impose the deterministic model:
+`$$y = \beta_0+\beta_1 x$$`
+which clearly captures the linear trend (red line in the figure shown),
+
+.pull-left[
+&lt;img src="presentation_mixedmodels_files/figure-html/fig2-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+The model cannot fully explain the variability in the data though. Statistical models account for variability in `\(Y\)` by introducing an error random variable:
+$$
+Y = f(X) + e
+$$
+]
+---
+class: top, left
+
+## A probabilistic approach to modeling
+
+The `\(Y=f(X)+e\)` approach is "common" in many texts that teach basic linear regression, but it is not the best way to teach statistical models because it hides the fundamental idea of modeling data using probability. 
+
+A more general approach is a conditional distribution framework, which describes models for real *processes* that produce/generate data conditional on fixed values of the explanatory variable(s):
+$$
+Y|X=x \sim p(y|X=x)
+$$
+where the expression `\(p(y|X=x)\)` is the distribution of potentially observable `\(Y\)` values when `\(X=x\)`.  
+
+This is a very general model. Different assumed families of conditional distributions `\(p(y|x)\)` give rise to different types of regression models. 
+---
+class: top, left
+
+## Probabilistic models generalize beyond observed data to potentially observable data
+
+**.navy[The data casts a shadow of the processes that generated it]** 
+
+The model for these processes is `\(p(y|x)\)`; so the data specifically target `\(p(y|x)\)`. 
+
+The ensemble of processes that produce the data are called the **.navy[data-generating process]** or **.navy[DGP]** and involve (at least) the **.orange[measurement process]**, the **.orange[type of observations sampled]**, **.orange[where]** they were sampled and **.orange[when]** they were sampled. 
+
+**.red[If the measurement process is faulty, then the data will provide misleading information about the real, natural processes that produced it.]**
+
+The model `\(p(y|x)\)` is a model for the DGP. It tries to explain how the .orange[*actual data*] collected was generated, **but** also generalizes to all other .orange[*potentially observable data*] that .orange[*could have arisen*] from the same DGP. But just as interpolation is safer than extrapolation, it is reasonable to assume that generalizations to DGPs `\(p_{\text{New}}(y|x)\)` that are similar is safer than DGPs that are quite different. 
+---
+class: top, left
+
+## Random
+
+We have claimed that a probabilistic model is a model for the DGP, which is comprised of measurement, scientific, and other processes at the given time and place of data collection. 
+
+Some texts describe statistical models in terms of a finite population of values from which `\(Y\)` is randomly sampled when `\(X=x\)`. 
+---
+class: title-slide, center, middle
+
+# THE GENERAL LINEAR MODEL
+
+---
+class: top, left
+
+
+---
+class: title-slide, center, middle
+
+# TYPES OF DATA
+---
+class: title-slide, center, middle
+
+# THE GENERALIZED LINEAR MODEL
+
+---
+class: title-slide, center, middle
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

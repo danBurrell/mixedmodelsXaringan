@@ -1,0 +1,196 @@
+---
+title: "Generalised Linear Models"
+subtitle: "with Random Effects"
+author: "Dan Burrell"
+institute: "BiometRy"
+date: "08/07/2021 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(tidyverse)
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#2f4f4f", 
+  secondary_color = "#778899", 
+  text_font_google = google_font("Montserrat", "300", "300i"),
+  header_font_google = google_font("Josefin Sans"),
+  code_font_google = google_font("Fira Mono"),
+  colors =  c(red = "#f34213", blueviolet = "#a80cc4", orange = "#ff8811", green = "#136f63", white = "#ffffff", navy = "#0009ff"))
+```
+---
+class: title-slide, center, middle
+
+# INTRODUCTION
+
+---
+class: top, left
+
+## What is this course about?
+
+### A very general approach to statistical modeling
+
+Most researchers are (at least mildly) comfortable with statistics when it involves simple hypothesis testing with t-tests, p-values, significance or $\alpha$ levels and rejection regions. 
+
+Some are basically comfortable with linear statistical models too; models that apply to uncorrelated and unconstrained continuous data with constant variance:
+
+* simple and multiple linear regression models
+* classification or analysis of variance (ANOVA) models
+
+Most do not understand well that these kinds of models are not usually appropriate for data that is .orange[dependent/correlated], or exhibits .orange[non-constant variance], or is measured on .orange[discrete or ordinal scales], or some combination of these. 
+
+**.navy[This course aims to introduce a flexible, general approach to statistical modeling that is capable of appropriately modeling all these kinds of data.]**
+
+---
+class: title-slide, center, middle
+
+# DETERMINISTIC VS. PROBABILISTIC MODELS
+---
+class: top, left
+
+## Quantitiative Models
+
+Scientists use models to study systems and processes because they are idealizations of reality that isolate the features of the phenomena that are pertinent to the study objectives:
+
+They use quantitative models because the process of mathematical abstraction clarifies and deepens understanding from within a universal and powerful logical framework that lends itself to communication and critique for continued learning.
+
+Statistician George Box has been credited with saying that __*.orange[All models are wrong. Some are useful!]*__ 
+
+* All models vary in the degree of accuracy with which they depict the **true** state of nature. 
+* All models are subject to prediction error.
+
+The degree to which a model is useful often has to do with its relative accuracy. A model is considered sufficiently accurate if it can predict the value of some variable and do so with an error that, for practical purposes, can be regarded as negligible.
+
+---
+class: top, left
+
+## A simple scenario
+
+A researcher wishes to relate a variable $Y$ to a variable $X$ on the basis of $n$ of experiments.
+
+For example, the figure below shows the results from a particular experimental setup that has been run $n=35$ times.
+
+```{r fig1, echo=FALSE, fig.align='center', fig.height=2.8, fig.width=5, dev='svg', warning=FALSE}
+
+# Set the random seed for reproducibility
+set.seed(09072021)
+
+# Construct fictious data
+data_fig1 = tibble(
+  X = runif(n=35, min=0, max=50),
+  Y = 75 + 2*X + rnorm(n=35, mean=10, sd=10))
+
+# construct scatterplot of observations
+gg_fig1 = ggplot(
+  data = data_fig1,
+  mapping = aes(x=X, y=Y)) +
+  geom_point(colour="blue", size=2) +
+  theme_minimal() +
+  theme(panel.background = element_rect(colour="black", size=1))
+
+# Display scatterplot
+gg_fig1
+
+```
+
+How should the researcher model this data?
+
+---
+class: top, left
+
+## A deterministic approach to modeling
+
+We could try to model the relationship between $Y$ and $X$ as a function:
+$$Y\approx f(X)$$
+Since [.blueviolet[Figure 1]](presentation_mixedmodels_files/figure-html/fig1-1.svg) indicates an approximately linear relationship we might impose the deterministic model:
+$$y = \beta_0+\beta_1 x$$
+which clearly captures the linear trend (red line in the figure shown),
+
+.pull-left[
+```{r fig2, echo=FALSE, fig.align='center', fig.height=2.5, fig.width=4, dev='svg', warning=FALSE}
+
+# Construct plot of deterministic model
+gg_fig2 = gg_fig1 +
+  geom_smooth(
+    formula = y ~ x,
+    method = "lm",
+    colour = "red",
+    se=FALSE)
+
+# Display deterministic model on scatterplot
+gg_fig2
+```
+]
+
+.pull-right[
+The model cannot fully explain the variability in the data though. Statistical models account for variability in $Y$ by introducing an error random variable:
+$$
+Y = f(X) + e
+$$
+]
+---
+class: top, left
+
+## A probabilistic approach to modeling
+
+The $Y=f(X)+e$ approach is "common" in many texts that teach basic linear regression, but it is not the best way to teach statistical models because it hides the fundamental idea of modeling data using probability. 
+
+A more general approach is a conditional distribution framework, which describes models for real *processes* that produce/generate data conditional on fixed values of the explanatory variable(s):
+$$
+Y|X=x \sim p(y|X=x)
+$$
+where the expression $p(y|X=x)$ is the distribution of potentially observable $Y$ values when $X=x$.  
+
+This is a very general model. Different assumed families of conditional distributions $p(y|x)$ give rise to different types of regression models. 
+---
+class: top, left
+
+## Probabilistic models generalize beyond observed data to potentially observable data
+
+**.navy[The data casts a shadow of the processes that generated it]** 
+
+The model for these processes is $p(y|x)$; so the data specifically target $p(y|x)$. 
+
+The ensemble of processes that produce the data are called the **.navy[data-generating process]** or **.navy[DGP]** and involve (at least) the **.orange[measurement process]**, the **.orange[type of observations sampled]**, **.orange[where]** they were sampled and **.orange[when]** they were sampled. 
+
+**.red[If the measurement process is faulty, then the data will provide misleading information about the real, natural processes that produced it.]**
+
+The model $p(y|x)$ is a model for the DGP. It tries to explain how the .orange[*actual data*] collected was generated, **but** also generalizes to all other .orange[*potentially observable data*] that .orange[*could have arisen*] from the same DGP. But just as interpolation is safer than extrapolation, it is reasonable to assume that generalizations to DGPs $p_{\text{New}}(y|x)$ that are similar is safer than DGPs that are quite different. 
+---
+class: top, left
+
+## Random
+
+We have claimed that a probabilistic model is a model for the DGP, which is comprised of measurement, scientific, and other processes at the given time and place of data collection. 
+
+Some texts describe statistical models in terms of a finite population of values from which $Y$ is randomly sampled when $X=x$. 
+---
+class: title-slide, center, middle
+
+# THE GENERAL LINEAR MODEL
+
+---
+class: top, left
+
+
+---
+class: title-slide, center, middle
+
+# TYPES OF DATA
+---
+class: title-slide, center, middle
+
+# THE GENERALIZED LINEAR MODEL
+
+---
+class: title-slide, center, middle
+
+
